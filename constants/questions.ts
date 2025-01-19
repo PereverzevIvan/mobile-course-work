@@ -1,6 +1,6 @@
-import { questionTypes } from "@/types";
+import { TQuestionsGroup } from "@/types/questions";
 
-export const CQuestions: questionTypes.TQuestionsGroup[] = [
+const groups: TQuestionsGroup[] = [
   {
     questions: [
       { id: 1, text: "В целом, можете ли Вы сказать, что Ваше здоровье?" },
@@ -239,10 +239,15 @@ export const CQuestions: questionTypes.TQuestionsGroup[] = [
     ],
     options: [
       { text: "определенно верно", weight: 1 },
-      { text: "в основном верно", weight: 1 },
-      { text: "не знаю", weight: 1 },
-      { text: "в основном неверно", weight: 1 },
-      { text: "определенно неверно", weight: 1 },
+      { text: "в основном верно", weight: 2 },
+      { text: "не знаю", weight: 3 },
+      { text: "в основном неверно", weight: 4 },
+      { text: "определенно неверно", weight: 5 },
     ],
   },
 ];
+
+export const CQuestions = {
+  groups: groups,
+  questionsCount: 33,
+};
