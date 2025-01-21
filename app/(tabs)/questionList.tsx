@@ -8,12 +8,14 @@ import {
   StyleSheet,
   TextInput,
 } from "react-native";
-
-import { saveTestResult } from "@/utils/storage";
+import {
+  ResultsContextProvider,
+  useResultsContext,
+} from "@/context/results.context";
+import { getAllResults, saveTestResult } from "@/utils/storage";
 import { CQuestions } from "@/constants/questions";
 import { TAnswer, TOption } from "@/types/questions";
 import { calculateTestResults } from "@/utils/calculate";
-import Toast from "react-native-toast-message";
 
 // Функция для генерации случайных ответов
 function randomAnswer(): TAnswer[] {
@@ -31,9 +33,9 @@ function randomAnswer(): TAnswer[] {
 
 export default function QuestionnaireScreen() {
   const [currentIndex, setCurrentIndex] = useState(0); // Индекс текущего вопроса
+  const { setReports } = useResultsContext();
   const currentGroup = CQuestions.groups[currentIndex]; // Текущая группа вопросов
   const isFirstQuestionGroup = currentIndex === 0;
-  const [username, setUsername] = useState(""); // Состояние для имени пользователя
   const isLastQuestionGroup = currentIndex === CQuestions.groups.length - 1;
   const [answers, setAnswers] = useState<TAnswer[]>([]);
 
@@ -70,12 +72,15 @@ export default function QuestionnaireScreen() {
     if (currentIndex > 0) setCurrentIndex((prev) => prev - 1);
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     console.log("Тест завершён");
-    console.log("Имя пользователя:", username);
     console.log("Ответы:", answers);
     console.log("Результат:", calculateTestResults(answers));
-    saveTestResult(calculateTestResults(answers));
+    saveTestResult(calculateTestResults(answers)).then(() => {
+      getAllResults().then((results) => {
+        setReports(results);
+      });
+    });
 
     resetTest();
   };
@@ -87,80 +92,81 @@ export default function QuestionnaireScreen() {
 
   useEffect(() => {
     setAnswers(randomAnswer());
-    Toast.show({
-      type: "success",
-      text1: "Успех",
-      text2: "Все результаты успешно удалены.",
-    });
   }, []);
 
   return (
-    <View style={styles.container}>
-      {/* Заголовок группы вопросов */}
-      {currentGroup.title && (
-        <Text style={styles.title}>{currentGroup.title}</Text>
-      )}
+    <ResultsContextProvider>
+      <View style={styles.container}>
+        {/* Заголовок группы вопросов */}
+        {currentGroup.title && (
+          <Text style={styles.title}>{currentGroup.title}</Text>
+        )}
 
-      {/* Список вопросов */}
-      <FlatList
-        data={currentGroup.questions}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item: question }) => (
-          <View style={styles.questionContainer}>
-            {/* Текст вопроса */}
-            <Text style={styles.questionText}>
-              {question.id}) {question.text}
-            </Text>
-            {/* Варианты ответа */}
-            {currentGroup.options.map((option) => {
-              const isSelected =
-                questionInAnswers(question.id) != -1 &&
-                option.weight ===
-                  answers[questionInAnswers(question.id)].optionWeight;
-              return (
-                <Pressable
-                  key={option.text}
-                  style={
-                    isSelected
-                      ? styles.selectedOptionButton
-                      : styles.optionButton
-                  }
-                  onPress={() => handlePressOption(question.id, option.weight)}
-                >
-                  <Text
+        {/* Список вопросов */}
+        <FlatList
+          data={currentGroup.questions}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item: question }) => (
+            <View style={styles.questionContainer}>
+              {/* Текст вопроса */}
+              <Text style={styles.questionText}>
+                {question.id}) {question.text}
+              </Text>
+              {/* Варианты ответа */}
+              {currentGroup.options.map((option) => {
+                const isSelected =
+                  questionInAnswers(question.id) != -1 &&
+                  option.weight ===
+                    answers[questionInAnswers(question.id)].optionWeight;
+                return (
+                  <Pressable
+                    key={option.text}
                     style={
-                      isSelected ? styles.selectedOptionText : styles.optionText
+                      isSelected
+                        ? styles.selectedOptionButton
+                        : styles.optionButton
+                    }
+                    onPress={() =>
+                      handlePressOption(question.id, option.weight)
                     }
                   >
-                    {option.text}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        )}
-      />
-
-      {/* Управление переключением вопросов */}
-      <View style={styles.navigationContainer}>
-        <Button
-          disabled={isFirstQuestionGroup}
-          title="Назад"
-          onPress={handlePrevious}
-          color="#2196F3"
+                    <Text
+                      style={
+                        isSelected
+                          ? styles.selectedOptionText
+                          : styles.optionText
+                      }
+                    >
+                      {option.text}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
         />
-        {isLastQuestionGroup ? (
+
+        {/* Управление переключением вопросов */}
+        <View style={styles.navigationContainer}>
           <Button
-            title="Завершить тест"
-            disabled={answers.length != CQuestions.questionsCount}
-            onPress={handleFinish}
+            disabled={isFirstQuestionGroup}
+            title="Назад"
+            onPress={handlePrevious}
             color="#2196F3"
           />
-        ) : (
-          <Button title="Далее" onPress={handleNext} color="#2196F3" />
-        )}
+          {isLastQuestionGroup ? (
+            <Button
+              title="Завершить тест"
+              disabled={answers.length != CQuestions.questionsCount}
+              onPress={handleFinish}
+              color="#2196F3"
+            />
+          ) : (
+            <Button title="Далее" onPress={handleNext} color="#2196F3" />
+          )}
+        </View>
       </View>
-    </View>
+    </ResultsContextProvider>
   );
 }
 

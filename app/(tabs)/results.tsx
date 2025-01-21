@@ -11,9 +11,10 @@ import {
 import { getAllResults, clearResults } from "@/utils/storage";
 
 import { TReport } from "@/types/results";
+import { useResultsContext } from "@/context/results.context";
 
 export default function TestResultsScreen() {
-  const [reports, setReports] = useState<TReport[]>([]);
+  const { reports, setReports } = useResultsContext();
   const [selectedReport, setSelectedReport] = useState<TReport | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -30,8 +31,9 @@ export default function TestResultsScreen() {
   };
 
   const handleClearResults = () => {
-    clearResults();
-    setReports([]);
+    clearResults().then(() => {
+      setReports([]);
+    });
   };
 
   return (
