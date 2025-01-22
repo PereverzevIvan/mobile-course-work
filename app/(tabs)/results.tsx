@@ -10,9 +10,11 @@ import {
   ScrollView,
 } from "react-native";
 import { getAllResults, clearResults } from "@/utils/storage";
+import { generateHealthChart } from "@/utils/generateDiagram";
 
 import { TReport } from "@/types/results";
 import { useResultsContext } from "@/context/results.context";
+import Toast from "react-native-toast-message";
 
 const getBackgroundColor = (value: number) => {
   if (value < 30) return styles.lowValue;
@@ -61,6 +63,8 @@ export default function TestResultsScreen() {
   const [selectedReport, setSelectedReport] = useState<TReport | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [finalHealthScore, setFinalHealthScore] = useState(0);
+  const [imageModalVisible, setImageModalVisible] = useState(false); // Новое состояние
+  const [imageSrc, setImageSrc] = useState<string | null>(null); // URL изображения
 
   useEffect(() => {
     if (selectedReport) {
@@ -87,6 +91,17 @@ export default function TestResultsScreen() {
     clearResults().then(() => {
       setReports([]);
     });
+  };
+
+  const handleShowImage = () => {
+    if (reports != null) {
+      generateHealthChart(reports).then((url) => {
+        if (url) {
+          setImageSrc(url);
+          setImageModalVisible(true);
+        }
+      });
+    }
   };
 
   return (
@@ -172,6 +187,18 @@ export default function TestResultsScreen() {
         </View>
       </Modal>
 
+      {/* Новое модальное окно для изображения */}
+      <Modal
+        visible={imageModalVisible}
+        animationType="fade"
+        onRequestClose={() => setImageModalVisible(false)}
+      >
+        <View style={styles.imageModalContainer}>
+          {imageSrc && <img src={imageSrc} style={styles.image} />}
+          <Button title="Закрыть" onPress={() => setImageModalVisible(false)} />
+        </View>
+      </Modal>
+
       {/* Кнопки под списком */}
       <View style={{ display: "flex", flexDirection: "column", gap: 7 }}>
         <Button
@@ -180,8 +207,9 @@ export default function TestResultsScreen() {
           onPress={handleClearResults}
         />
         <Button
+          disabled={reports == null}
           title="Построить график"
-          onPress={() => console.log("Построение графика")}
+          onPress={() => handleShowImage()}
         />
       </View>
     </View>
@@ -285,5 +313,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3, // Для Android
+  },
+  imageModalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 20,
+    backgroundColor: "rgba(0, 0, 0, 0)",
+  },
+  image: {
+    width: "90%",
   },
 });

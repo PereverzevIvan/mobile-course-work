@@ -15,6 +15,7 @@ import { getAllResults, saveTestResult } from "@/utils/storage";
 import { CQuestions } from "@/constants/questions";
 import { TAnswer } from "@/types/questions";
 import { calculateTestResults } from "@/utils/calculate";
+import Toast from "react-native-toast-message";
 
 // Функция для генерации случайных ответов
 function randomAnswer(): TAnswer[] {
@@ -28,6 +29,21 @@ function randomAnswer(): TAnswer[] {
     });
   });
   return answers;
+}
+
+// Функция для нахождения вопросов, на которые не дали ответы
+function findUnansweredQuestions(answers: TAnswer[]): number[] {
+  const totalQuestions = 36; // Всего вопросов
+  const answeredQuestions = new Set(answers.map((answer) => answer.questionId));
+
+  const unansweredQuestions: number[] = [];
+  for (let i = 1; i <= totalQuestions; i++) {
+    if (!answeredQuestions.has(i)) {
+      unansweredQuestions.push(i);
+    }
+  }
+
+  return unansweredQuestions;
 }
 
 export default function QuestionnaireScreen() {
@@ -72,16 +88,25 @@ export default function QuestionnaireScreen() {
   };
 
   const handleFinish = async () => {
-    console.log("Тест завершён");
-    console.log("Ответы:", answers);
-    console.log("Результат:", calculateTestResults(answers));
-    saveTestResult(calculateTestResults(answers)).then(() => {
-      getAllResults().then((results) => {
-        setReports(results);
-      });
-    });
+    const unansweredQuestions = findUnansweredQuestions(answers);
+    if (unansweredQuestions.length == 0) {
+      console.log("Тест завершён");
+      console.log("Ответы:", answers);
+      console.log("Результат:", calculateTestResults(answers));
 
-    resetTest();
+      saveTestResult(calculateTestResults(answers)).then(() => {
+        getAllResults().then((results) => {
+          setReports(results);
+          resetTest();
+        });
+      });
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Вы ответили не на все вопросы",
+        text2: "Ответьте на: " + unansweredQuestions.join(", "),
+      });
+    }
   };
 
   const resetTest = () => {
@@ -156,7 +181,6 @@ export default function QuestionnaireScreen() {
           {isLastQuestionGroup ? (
             <Button
               title="Завершить тест"
-              disabled={answers.length != CQuestions.questionsCount}
               onPress={handleFinish}
               color="#2196F3"
             />
