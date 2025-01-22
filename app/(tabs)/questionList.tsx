@@ -6,7 +6,6 @@ import {
   FlatList,
   Pressable,
   StyleSheet,
-  TextInput,
 } from "react-native";
 import {
   ResultsContextProvider,
@@ -14,7 +13,7 @@ import {
 } from "@/context/results.context";
 import { getAllResults, saveTestResult } from "@/utils/storage";
 import { CQuestions } from "@/constants/questions";
-import { TAnswer, TOption } from "@/types/questions";
+import { TAnswer } from "@/types/questions";
 import { calculateTestResults } from "@/utils/calculate";
 
 // Функция для генерации случайных ответов
@@ -117,7 +116,7 @@ export default function QuestionnaireScreen() {
                 const isSelected =
                   questionInAnswers(question.id) != -1 &&
                   option.weight ===
-                    answers[questionInAnswers(question.id)].optionWeight;
+                  answers[questionInAnswers(question.id)].optionWeight;
                 return (
                   <Pressable
                     key={option.text}

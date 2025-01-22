@@ -14,7 +14,7 @@ function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;
 }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  return <FontAwesome size={25} {...props} />;
 }
 
 export default function TabLayout() {
@@ -24,7 +24,12 @@ export default function TabLayout() {
     <ResultsContextProvider>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+          tabBarActiveTintColor: "white", // Цвет активного текста
+          tabBarInactiveTintColor: "darkgray", // Цвет неактивного текста
+          tabBarStyle: styles.tabBarStyle,
+          tabBarIconStyle: styles.tabBarIconStyle,
+          // tabBarActiveBackgroundColor: "#272829", // Фон активной вкладки
+          // tabBarInactiveBackgroundColor: "black", // Фон неактивных вкладок
           headerShown: useClientOnlyValue(false, true),
         }}
       >
@@ -32,21 +37,33 @@ export default function TabLayout() {
           name="index"
           options={{
             title: "О приложении",
-            tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+            tabBarIcon: ({ color }) => (
+              <FontAwesome size={30} name="home" color={color} />
+            ),
+            tabBarItemStyle: styles.tabBarItemStyle,
+            tabBarLabelStyle: styles.tabBarLabelStyle,
           }}
         />
         <Tabs.Screen
           name="questionList"
           options={{
             title: "Тест",
-            tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+            tabBarIcon: ({ color }) => (
+              <FontAwesome size={22} name="calculator" color={color} />
+            ),
+            tabBarItemStyle: styles.tabBarItemStyle,
+            tabBarLabelStyle: styles.tabBarLabelStyle,
           }}
         />
         <Tabs.Screen
           name="results"
           options={{
             title: "Результаты",
-            tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+            tabBarIcon: ({ color }) => (
+              <TabBarIcon name="bar-chart-o" color={color} />
+            ),
+            tabBarItemStyle: styles.tabBarItemStyle,
+            tabBarLabelStyle: styles.tabBarLabelStyle,
           }}
         />
       </Tabs>
@@ -54,3 +71,18 @@ export default function TabLayout() {
     </ResultsContextProvider>
   );
 }
+
+const styles = {
+  tabBarStyle: {
+    backgroundColor: "black", // Фон таб-бара
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    height: 70,
+  },
+  tabBarLabelStyle: {
+    fontSize: 14, // Размер текста
+  },
+  tabBarItemStyle: { alignSelf: "center" },
+  tabBarIconStyle: { marginBottom: 5 },
+};

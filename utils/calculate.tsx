@@ -33,7 +33,7 @@ const bodilypainConvert = (seven: number, eight: number): [number, number] => {
 const generalHealthConvert = (
   first: number,
   thirtyFive: number,
-  thirtySix: number
+  thirtySix: number,
 ): [number, number, number] => {
   let newFirst: number, newThirtyFive: number, newThirtySix: number;
   const thirtyFiveSixTable: Record<number, number> = {
@@ -107,7 +107,7 @@ export const calculateTestResults = (answers: TAnswer[]): TReport => {
   const eight = answers.find((a) => a.questionId === 8);
   const [newSeven, newEight] = bodilypainConvert(
     seven?.optionWeight ?? 0,
-    eight?.optionWeight ?? 0
+    eight?.optionWeight ?? 0,
   );
   const bodilypain = ((newSeven + newEight - 2) / 10) * 100;
 
@@ -123,7 +123,7 @@ export const calculateTestResults = (answers: TAnswer[]): TReport => {
   const [newFirst, newThirtyFive, newThirtySix] = generalHealthConvert(
     first?.optionWeight ?? 0,
     thirtyFive?.optionWeight ?? 0,
-    thirtySix?.optionWeight ?? 0
+    thirtySix?.optionWeight ?? 0,
   );
 
   const GHSum =
@@ -140,7 +140,7 @@ export const calculateTestResults = (answers: TAnswer[]): TReport => {
     answers.find((a) => a.questionId === 29)?.optionWeight ?? 0;
   const [newFirstVitality, newSecondVitality] = vitalityConvert(
     firstVitality?.optionWeight ?? 0,
-    secondVitality?.optionWeight ?? 0
+    secondVitality?.optionWeight ?? 0,
   );
   const VTSum =
     newFirstVitality + newSecondVitality + thirdVitality + fourVitality;
@@ -222,30 +222,30 @@ export const calculateTestResults = (answers: TAnswer[]): TReport => {
 
   const date = new Date();
   const formatDate = `${String(date.getDate()).padStart(2, "0")}.${String(
-    date.getMonth() + 1
+    date.getMonth() + 1,
   ).padStart(2, "0")}.${date.getFullYear()} ${String(date.getHours()).padStart(
     2,
-    "0"
+    "0",
   )}:${String(date.getMinutes()).padStart(2, "0")}:${String(
-    date.getSeconds()
+    date.getSeconds(),
   ).padStart(2, "0")}`;
 
   // Возвращаем результаты
   const report: TReport = {
     results: {
       physicalComponentHealth: {
-        commonPhysicalHealth: commonPH,
-        physicalFunctioning,
-        rolePhisicalFunctioning,
-        bodilypain,
-        generalHealth,
+        commonPhysicalHealth: Math.round(commonPH),
+        physicalFunctioning: Math.round(physicalFunctioning),
+        rolePhisicalFunctioning: Math.round(rolePhisicalFunctioning),
+        bodilypain: Math.round(bodilypain),
+        generalHealth: Math.round(generalHealth),
       },
       mentalComponentHealth: {
-        commonMentalHealth: commonMH,
-        vitality,
-        socialFunctioning,
-        roleEmotional,
-        mentalHealth,
+        commonMentalHealth: Math.round(commonMH),
+        vitality: Math.fround(vitality),
+        socialFunctioning: Math.round(socialFunctioning),
+        roleEmotional: Math.round(roleEmotional),
+        mentalHealth: Math.round(mentalHealth),
       },
     },
     date: formatDate,
