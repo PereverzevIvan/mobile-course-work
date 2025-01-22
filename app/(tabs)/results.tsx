@@ -15,6 +15,7 @@ import { generateHealthChart } from "@/utils/generateDiagram";
 import { TReport } from "@/types/results";
 import { useResultsContext } from "@/context/results.context";
 import Toast from "react-native-toast-message";
+import { deleteAllResultsApi, getAllResultsApi } from "@/api/resultsApi";
 
 const getBackgroundColor = (value: number) => {
   if (value < 30) return styles.lowValue;
@@ -75,11 +76,31 @@ export default function TestResultsScreen() {
     }
   }, [selectedReport]);
 
+  // Загрузка данных при монтировании компонента с помощью api
   useEffect(() => {
-    getAllResults().then((results) => {
-      setReports(results);
-    });
+    const fetchResults = async () => {
+      try {
+        const data = await getAllResultsApi();
+        setReports(data);
+      } catch (error) {
+        Toast.show({
+          type: "error",
+          text1: "Не удалось загрузить результаты",
+          text2: "Проверьте подключение к серверу",
+        });
+        console.error("Error fetching results:", error);
+      }
+    };
+
+    fetchResults();
   }, []);
+
+  // Загрузка данных при монтировании компонента с помощью async storage
+  // useEffect(() => {
+  //   getAllResults().then((results) => {
+  //     setReports(results);
+  //   });
+  // }, []);
 
   // Открытие модального окна с деталями
   const handleViewDetails = (report: TReport) => {
@@ -87,19 +108,38 @@ export default function TestResultsScreen() {
     setModalVisible(true);
   };
 
-  const handleClearResults = () => {
-    clearResults().then(() => {
+  // Очистка результатов с помощью api
+  const handleClearResults = async () => {
+    try {
+      await deleteAllResultsApi();
       setReports([]);
-    });
+      Toast.show({ type: "success", text1: "Результаты успешно удалены" });
+    } catch (error) {
+      Toast.show({ type: "error", text1: "Не удалось удалить результаты" });
+      console.error("Error deleting results:", error);
+    }
   };
 
+  // Очистка результатов с помощью async storage
+  // const handleClearResults = () => {
+  //   clearResults().then(() => {
+  //     setReports([]);
+  //   });
+  // };
+
   const handleShowImage = () => {
-    if (reports != null) {
+    if (reports != null && reports.length > 0) {
       generateHealthChart(reports).then((url) => {
         if (url) {
           setImageSrc(url);
           setImageModalVisible(true);
         }
+      });
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Не удалось построить график",
+        text2: "Результаты не загружены",
       });
     }
   };

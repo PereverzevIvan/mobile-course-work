@@ -16,6 +16,7 @@ import { CQuestions } from "@/constants/questions";
 import { TAnswer } from "@/types/questions";
 import { calculateTestResults } from "@/utils/calculate";
 import Toast from "react-native-toast-message";
+import { saveNewResultApi } from "@/api/resultsApi";
 
 // Функция для генерации случайных ответов
 function randomAnswer(): TAnswer[] {
@@ -87,19 +88,24 @@ export default function QuestionnaireScreen() {
     if (currentIndex > 0) setCurrentIndex((prev) => prev - 1);
   };
 
+  // Завершение теста и сохранение результатов с помощью api
   const handleFinish = async () => {
     const unansweredQuestions = findUnansweredQuestions(answers);
     if (unansweredQuestions.length == 0) {
+      const result = calculateTestResults(answers);
       console.log("Тест завершён");
       console.log("Ответы:", answers);
-      console.log("Результат:", calculateTestResults(answers));
+      console.log("Результат:", result);
 
-      saveTestResult(calculateTestResults(answers)).then(() => {
-        getAllResults().then((results) => {
-          setReports(results);
-          resetTest();
-        });
-      });
+      try {
+        await saveNewResultApi(result);
+        Toast.show({ type: "success", text1: "Результат успешно сохранен" });
+        setReports((results) => [...results, result]);
+        resetTest();
+      } catch (error) {
+        Toast.show({ type: "error", text1: "Не удалось сохранить результат" });
+        console.error("Error saving result:", error);
+      }
     } else {
       Toast.show({
         type: "error",
@@ -108,6 +114,29 @@ export default function QuestionnaireScreen() {
       });
     }
   };
+
+  // Завершение теста и сохранение результатов с помощью async storage
+  // const handleFinish = async () => {
+  //   const unansweredQuestions = findUnansweredQuestions(answers);
+  //   if (unansweredQuestions.length == 0) {
+  //     console.log("Тест завершён");
+  //     console.log("Ответы:", answers);
+  //     console.log("Результат:", calculateTestResults(answers));
+  //
+  //     saveTestResult(calculateTestResults(answers)).then(() => {
+  //       getAllResults().then((results) => {
+  //         setReports(results);
+  //         resetTest();
+  //       });
+  //     });
+  //   } else {
+  //     Toast.show({
+  //       type: "error",
+  //       text1: "Вы ответили не на все вопросы",
+  //       text2: "Ответьте на: " + unansweredQuestions.join(", "),
+  //     });
+  //   }
+  // };
 
   const resetTest = () => {
     setAnswers([]); // Сбрасываем ответы

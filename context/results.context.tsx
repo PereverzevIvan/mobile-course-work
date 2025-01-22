@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 import { TReport } from "@/types/results";
 
 interface UserContextType {
-  reports: TReport[] | null;
-  setReports: React.Dispatch<React.SetStateAction<TReport[] | null>>;
+  reports: TReport[];
+  setReports: React.Dispatch<React.SetStateAction<TReport[]>>;
 }
 
 const ReportsContext = createContext<UserContextType | undefined>(undefined);
@@ -11,7 +11,7 @@ const ReportsContext = createContext<UserContextType | undefined>(undefined);
 export const ResultsContextProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [reports, setReports] = useState<TReport[] | null>([]);
+  const [reports, setReports] = useState<TReport[]>([]);
 
   return (
     <ReportsContext.Provider value={{ reports, setReports }}>
